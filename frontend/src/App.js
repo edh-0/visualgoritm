@@ -1,68 +1,128 @@
-// App.js
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// frontend/src/App.js
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { generateArray } from './utils/generateArray';
 import { 
   algorithms, 
   algorithmList 
 } from './algorithms';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
+import AuthModal from './components/auth/AuthModal';
+import UserMenu from './components/auth/UserMenu';
 import ArrayVisualizer from './components/ArrayVisualizer';
 
-function App() {
-  // === СОСТОЯНИЯ ===
-  const [array, setArray] = useState(generateArray(6)); // Начинаем с 6 элементов
-  const [steps, setSteps] = useState([]); // Все шаги алгоритма
-  const [currentStep, setCurrentStep] = useState(0); // Текущий шаг (0, 1, 2...)
-  const [isPlaying, setIsPlaying] = useState(false); // Идёт ли анимация
-  const [speed, setSpeed] = useState(500); // Скорость в мс (медленно для начала)
-  const [isSorted, setIsSorted] = useState(false); // Отсортирован ли массив
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubble'); // выбор алгоритма
+// ==================== КОМПОНЕНТЫ АВТОРИЗАЦИИ ====================
+
+// Компонент для кнопки входа
+const LoginButton = ({ onClick }) => (
+  <button 
+    className="login-button"
+    onClick={onClick}
+  >
+    Войти / Регистрация
+  </button>
+);
+
+// Главный компонент с auth логикой - ОТДЕЛЬНЫЙ от AlgorithmVisualizer
+const AppContent = () => {
+  const { user, loading } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Загрузка...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="App">
+      <header className="app-header">
+        <div className="header-content">
+          <h1 className="app-title">Визуализатор алгоритмов</h1>
+          <div className="auth-section">
+            {user ? (
+              <UserMenu />
+            ) : (
+              <LoginButton onClick={() => setIsAuthModalOpen(true)} />
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="app-main">
+        <AlgorithmVisualizer /> {/* ← Перенес логику визуализации сюда */}
+      </main>
+
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
+    </div>
+  );
+};
+
+// Обёртка App с AuthProvider
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+};
+
+// ==================== КОМПОНЕНТ ВИЗУАЛИЗАЦИИ АЛГОРИТМОВ ====================
+
+// НОВЫЙ КОМПОНЕНТ: вся логика визуализации перенесена сюда
+const AlgorithmVisualizer = () => {
+  const [array, setArray] = useState(generateArray(6));
+  const [steps, setSteps] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(500);
+  const [isSorted, setIsSorted] = useState(false);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubble');
   
-  // useRef для таймера
   const timerRef = useRef(null);
 
-// === 1. ГЕНЕРАЦИЯ ШАГОВ ПРИ ИЗМЕНЕНИИ МАССИВА ИЛИ АЛГОРИТМА ===
-useEffect(() => {
-  console.log(`Генерируем шаги для алгоритма: ${selectedAlgorithm}...`);
-  
-  // Получаем выбранный алгоритм
-  const algorithm = algorithms[selectedAlgorithm];
-  if (!algorithm || !algorithm.function) {
-    console.error('Алгоритм не найден:', selectedAlgorithm);
-    return;
-  }
-  
-  // Генерируем шаги с помощью выбранного алгоритма
-  const newSteps = algorithm.function(array);
-  setSteps(newSteps);
-  setCurrentStep(0);
-  setIsSorted(false);
-  setIsPlaying(false);
-  
-  console.log(`Сгенерировано ${newSteps.length} шагов`);
-}, [array, selectedAlgorithm]); // Теперь зависит и от алгоритма
-
-  // === 2. ЛОГИКА АВТОМАТИЧЕСКОЙ АНИМАЦИИ ===
+  // Генерация шагов
   useEffect(() => {
-    // Очищаем предыдущий таймер
+    console.log(`Генерируем шаги для алгоритма: ${selectedAlgorithm}...`);
+    
+    const algorithm = algorithms[selectedAlgorithm];
+    if (!algorithm || !algorithm.function) {
+      console.error('Алгоритм не найден:', selectedAlgorithm);
+      return;
+    }
+    
+    const newSteps = algorithm.function(array);
+    setSteps(newSteps);
+    setCurrentStep(0);
+    setIsSorted(false);
+    setIsPlaying(false);
+    
+    console.log(`Сгенерировано ${newSteps.length} шагов`);
+  }, [array, selectedAlgorithm]);
+
+  // Логика анимации
+  useEffect(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
     
-    // Если играем и есть следующие шаги
     if (isPlaying && currentStep < steps.length - 1) {
       timerRef.current = setTimeout(() => {
         setCurrentStep(prev => prev + 1);
       }, speed);
-    } 
-    // Если дошли до конца
-    else if (currentStep >= steps.length - 1 && steps.length > 0) {
+    } else if (currentStep >= steps.length - 1 && steps.length > 0) {
       setIsPlaying(false);
       setIsSorted(true);
       console.log('✅ Сортировка завершена!');
     }
     
-    // Очистка при размонтировании
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -70,28 +130,22 @@ useEffect(() => {
     };
   }, [isPlaying, currentStep, steps.length, speed]);
 
-  // === 3. ФУНКЦИИ УПРАВЛЕНИЯ ===
+  // Функции управления
   const handleNewArray = () => {
-    // Останавливаем анимацию
     setIsPlaying(false);
-    // Генерируем новый массив (от 5 до 10 элементов)
     const newSize = Math.floor(Math.random() * 6) + 5;
     setArray(generateArray(newSize));
   };
 
   const handleAlgorithmChange = (algorithmId) => {
-    // Останавливаем текущую анимацию
     setIsPlaying(false);
-    // Меняем алгоритм
     setSelectedAlgorithm(algorithmId);
-    // Сбрасываем шаги (новые сгенерируются в useEffect)
     setCurrentStep(0);
     setIsSorted(false);
   };
 
   const handlePlayPause = () => {
     if (isSorted) {
-      // Если уже отсортировано, начинаем с начала
       setCurrentStep(0);
       setIsSorted(false);
     }
@@ -120,14 +174,13 @@ useEffect(() => {
 
   const handleSpeedChange = (newSpeed) => {
     setSpeed(newSpeed);
-    // Если анимация играет, перезапускаем с новой скоростью
     if (isPlaying) {
       setIsPlaying(false);
       setTimeout(() => setIsPlaying(true), 10);
     }
   };
 
-  // === 4. ТЕКУЩИЙ ШАГ ДЛЯ ОТОБРАЖЕНИЯ ===
+  // Данные текущего шага
   const currentStepData = steps[currentStep] || {
     array: array,
     comparing: [],
@@ -135,32 +188,27 @@ useEffect(() => {
     description: "Готов к сортировке..."
   };
 
-  // === 5. ПРОГРЕСС В ПРОЦЕНТАХ ===
+  // Прогресс в процентах
   const progressPercent = steps.length > 0 
     ? Math.round((currentStep / (steps.length - 1)) * 100) 
     : 0;
 
-  return (
-    <div className="App">
-      <header>
-        <h1>🫧 Визуализатор пузырьковой сортировки</h1>
-        <p className="subtitle">Пошаговая анимация алгоритма сортировки</p>
-      </header>
+  // ==================== РЕНДЕР КОМПОНЕНТА ВИЗУАЛИЗАЦИИ ====================
 
-      {/* === ВИЗУАЛИЗАЦИЯ === */}
+  return (
+    <div className="algorithm-visualizer">
       <div className="visualization-section">
-        <ArrayVisualizer
-          array={currentStepData.array}
-          comparing={currentStepData.comparing}
-          swapped={currentStepData.swapped}
-        />
+      <ArrayVisualizer
+        array={currentStepData.array}
+        comparing={currentStepData.comparing}
+        swapped={currentStepData.swapped}
+      />
         
-        {/* Описание текущего шага */}
         <div className={`step-description ${isSorted ? 'sorted' : ''}`}>
           {isSorted ? '✅ ' : '📝 '}
           {currentStepData.description}
         </div>
-        {/* Информация о выбранном алгоритме */}
+        
         <div className="algorithm-info">
           <h3>{algorithms[selectedAlgorithm]?.info.name || 'Алгоритм'}</h3>
           <div className="complexity">
@@ -175,7 +223,7 @@ useEffect(() => {
             {algorithms[selectedAlgorithm]?.info.description}
           </p>
         </div>
-        {/* Прогресс-бар */}
+        
         <div className="progress-container">
           <div 
             className="progress-bar" 
@@ -187,9 +235,7 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* === ПАНЕЛЬ УПРАВЛЕНИЯ === */}
       <div className="controls-panel">
-        {/* Выбор алгоритма */}
         <div className="algorithm-selector">
           <label htmlFor="algorithm-select">Выберите алгоритм:</label>
           <select 
@@ -205,15 +251,11 @@ useEffect(() => {
             ))}
           </select>
         </div>
-        {/* Основные кнопки */}
+        
         <div className="button-group">
-          <button 
-            className="btn new-array"
-            onClick={handleNewArray}
-          >
+          <button className="btn new-array" onClick={handleNewArray}>
             🎲 Новый массив
           </button>
-          
           <button 
             className="btn step-back"
             onClick={handleStepBackward}
@@ -221,14 +263,12 @@ useEffect(() => {
           >
             ⏪ Шаг назад
           </button>
-          
           <button 
             className={`btn play-pause ${isPlaying ? 'pause' : 'play'}`}
             onClick={handlePlayPause}
           >
             {isPlaying ? '⏸ Пауза' : isSorted ? '🔄 С начала' : '▶ Старт'}
           </button>
-          
           <button 
             className="btn step-forward"
             onClick={handleStepForward}
@@ -236,16 +276,11 @@ useEffect(() => {
           >
             ⏩ Шаг вперёд
           </button>
-          
-          <button 
-            className="btn reset"
-            onClick={handleReset}
-          >
+          <button className="btn reset" onClick={handleReset}>
             🔄 Сброс
           </button>
         </div>
         
-        {/* Контроль скорости */}
         <div className="speed-control">
           <label>Скорость анимации:</label>
           <input
@@ -253,7 +288,7 @@ useEffect(() => {
             min="50"
             max="1000"
             step="50"
-            value={1000 - speed} // Инвертируем для интуитивности
+            value={1000 - speed}
             onChange={(e) => handleSpeedChange(1000 - parseInt(e.target.value))}
             className="speed-slider"
           />
@@ -263,7 +298,6 @@ useEffect(() => {
           </div>
         </div>
         
-        {/* Статистика */}
         <div className="stats">
           <div className="stat">
             <span className="stat-label">Элементов:</span>
@@ -282,7 +316,6 @@ useEffect(() => {
         </div>
       </div>
       
-      {/* Информация о массиве */}
       <div className="array-info">
         <details>
           <summary>📊 Информация о массиве (кликните чтобы раскрыть)</summary>
@@ -294,49 +327,48 @@ useEffect(() => {
           </div>
         </details>
       </div>
-      {/* Секция сравнения алгоритмов */}
-    <div className="comparison-section">
-      <h3>📊 Сравнение алгоритмов</h3>
-      <div className="algorithm-cards">
-        {Object.entries(algorithms).map(([id, algo]) => (
-          <div 
-            key={id}
-            className={`algorithm-card ${selectedAlgorithm === id ? 'selected' : ''}`}
-            onClick={() => handleAlgorithmChange(id)}
-          >
-            <h4>{algo.info.name}</h4>
-            <div className="algorithm-stats">
-              <div><strong>Сложность:</strong> {algo.info.timeComplexity}</div>
-              <div><strong>Память:</strong> {algo.info.spaceComplexity}</div>
-              <div><strong>Шагов для текущего массива:</strong> {algo.function(array).length}</div>
+      
+      <div className="comparison-section">
+        <h3>📊 Сравнение алгоритмов</h3>
+        <div className="algorithm-cards">
+          {Object.entries(algorithms).map(([id, algo]) => (
+            <div 
+              key={id}
+              className={`algorithm-card ${selectedAlgorithm === id ? 'selected' : ''}`}
+              onClick={() => handleAlgorithmChange(id)}
+            >
+              <h4>{algo.info.name}</h4>
+              <div className="algorithm-stats">
+                <div><strong>Сложность:</strong> {algo.info.timeComplexity}</div>
+                <div><strong>Память:</strong> {algo.info.spaceComplexity}</div>
+                <div><strong>Шагов для текущего массива:</strong> {algo.function(array).length}</div>
+              </div>
+              <p>{algo.info.description}</p>
             </div>
-            <p>{algo.info.description}</p>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+      
+      <div className="live-stats">
+        <div className="stat-card">
+          <div className="stat-title">Текущий алгоритм</div>
+          <div className="stat-value">{algorithms[selectedAlgorithm]?.name || '—'}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Всего шагов</div>
+          <div className="stat-value">{steps.length}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Текущий шаг</div>
+          <div className="stat-value">{currentStep + 1}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-title">Скорость</div>
+          <div className="stat-value">{speed}мс</div>
+        </div>
       </div>
     </div>
-        {/* Статистика в реальном времени */}
-    <div className="live-stats">
-      <div className="stat-card">
-        <div className="stat-title">Текущий алгоритм</div>
-        <div className="stat-value">{algorithms[selectedAlgorithm]?.name || '—'}</div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-title">Всего шагов</div>
-        <div className="stat-value">{steps.length}</div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-title">Текущий шаг</div>
-        <div className="stat-value">{currentStep + 1}</div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-title">Скорость</div>
-        <div className="stat-value">{speed}мс</div>
-      </div>
-    </div>
-    </div>
-    
   );
-}
+};
 
-export default App;
+export default App; // ← Экспортируем главный App
