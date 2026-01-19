@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "https://edh-0.github.io/visualgoritm/static/css/main.8fef5c72.css",
-    "main.js": "https://edh-0.github.io/visualgoritm/static/js/main.9ed34f21.js",
+    "main.css": "https://edh-0.github.io/visualgoritm/static/css/main.d04a4ddf.css",
+    "main.js": "https://edh-0.github.io/visualgoritm/static/js/main.14878190.js",
     "index.html": "https://edh-0.github.io/visualgoritm/index.html",
-    "main.8fef5c72.css.map": "https://edh-0.github.io/visualgoritm/static/css/main.8fef5c72.css.map",
-    "main.9ed34f21.js.map": "https://edh-0.github.io/visualgoritm/static/js/main.9ed34f21.js.map"
+    "main.d04a4ddf.css.map": "https://edh-0.github.io/visualgoritm/static/css/main.d04a4ddf.css.map",
+    "main.14878190.js.map": "https://edh-0.github.io/visualgoritm/static/js/main.14878190.js.map"
   },
   "entrypoints": [
-    "static/css/main.8fef5c72.css",
-    "static/js/main.9ed34f21.js"
+    "static/css/main.d04a4ddf.css",
+    "static/js/main.14878190.js"
   ]
 }
