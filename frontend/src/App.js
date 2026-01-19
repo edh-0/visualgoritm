@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { generateArray } from './utils/generateArray';
@@ -54,7 +53,7 @@ const AppContent = () => {
       </header>
 
       <main className="app-main">
-        <AlgorithmVisualizer /> {/* ← Перенес логику визуализации сюда */}
+        <AlgorithmVisualizer /> 
       </main>
 
       <AuthModal 
@@ -76,7 +75,6 @@ const App = () => {
 
 // ==================== КОМПОНЕНТ ВИЗУАЛИЗАЦИИ АЛГОРИТМОВ ====================
 
-// НОВЫЙ КОМПОНЕНТ: вся логика визуализации перенесена сюда
 const AlgorithmVisualizer = () => {
   const [array, setArray] = useState(generateArray(6));
   const [steps, setSteps] = useState([]);
@@ -371,4 +369,4 @@ const AlgorithmVisualizer = () => {
   );
 };
 
-export default App; // ← Экспортируем главный App
+export default App; // Экспортируем главный App

@@ -1,4 +1,3 @@
-// components/ArrayVisualizer.js
 import React from 'react';
 import './ArrayVisualizer.css';
 

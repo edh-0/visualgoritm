@@ -9,6 +9,3 @@ export function generateArray(size = 10) {
   });
 }
 
-// Пример использования:
-// generateArray(5) → [34, 78, 12, 89, 45]
-

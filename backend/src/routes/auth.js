@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
 
     // Проверяем, есть ли уже пользователь
     const [existingUsers] = await pool.query(
-      'SELECT id FROM users WHERE email = ?',  // ← ИСПРАВЛЕНО: $1 → ?
+      'SELECT id FROM users WHERE email = ?', 
       [email]
     );
 
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
     // Создаем пользователя
     const [result] = await pool.query(
       `INSERT INTO users (email, password_hash, username)
-       VALUES (?, ?, ?)`,  // ← ИСПРАВЛЕНО: $1, $2, $3 → ?, ?, ?
+       VALUES (?, ?, ?)`, 
       [email, passwordHash, username || null]
     );
 
@@ -72,7 +72,7 @@ router.post('/login', async (req, res) => {
 
     // Ищем пользователя
     const [users] = await pool.query(
-      'SELECT id, email, username, password_hash FROM users WHERE email = ?',  // ← ИСПРАВЛЕНО
+      'SELECT id, email, username, password_hash FROM users WHERE email = ?', 
       [email]
     );
 
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
 
     // Обновляем время последнего входа
     await pool.query(
-      'UPDATE users SET last_login = NOW() WHERE id = ?',  // ← ИСПРАВЛЕНО
+      'UPDATE users SET last_login = NOW() WHERE id = ?',  
       [user.id]
     );
 
@@ -129,7 +129,7 @@ router.get('/me', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const [users] = await pool.query(
-      'SELECT id, email, username, created_at, last_login FROM users WHERE id = ?',  // ← ИСПРАВЛЕНО
+      'SELECT id, email, username, created_at, last_login FROM users WHERE id = ?', 
       [decoded.userId]
     );
 

@@ -34,7 +34,7 @@ frontend/build/
 # Database (не включаем бинарные файлы, только SQL дампы)
 *.sqlite
 *.db
-# !database/backup.sql  # ← этот файл МОЖНО комитить
+# !database/backup.sql
 
 # Logs
 *.log

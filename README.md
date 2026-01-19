@@ -22,8 +22,3 @@
 - Node.js 18+
 - XAMPP (или MySQL)
 - Git
-
-## 🛠 Установка
-```bash
-npm install
-npm start
