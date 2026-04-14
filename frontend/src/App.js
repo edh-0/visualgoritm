@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
-import { generateArray } from './utils/generateArray';
+import { generateArray, getArraySizeByAlgorithm } from './utils/generateArray';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/auth/AuthModal';
@@ -8,9 +8,10 @@ import UserMenu from './components/auth/UserMenu';
 import ArrayVisualizer from './components/ArrayVisualizer';
 import CodeDebugger from './components/CodeDebugger';
 import GraphVisualizer from './components/GraphVisualizer';
-import { sampleGraph, graphNodes } from './algorithms/bfs';
+/* import { sampleGraph, graphNodes } from './algorithms/bfs'; */
 import { algorithms } from './algorithms';
 import TheoryPanel from './components/TheoryPanel';
+import { generateNewGraph, getCurrentGraph, refreshGraph } from './algorithms/randomGraph';
 
 // Компонент для кнопки входа
 const LoginButton = ({ onClick }) => (
@@ -24,6 +25,7 @@ const AppContent = () => {
   const { user, loading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubble');
+  const [arraySize, setArraySize] = useState(12);
 
   if (loading) {
     return (
@@ -97,13 +99,13 @@ const App = () => {
 
 // Компонент визуализации алгоритмов
 const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
-  const [array, setArray] = useState(generateArray(6));
+  const [array, setArray] = useState(generateArray(12));
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const speed = 500;
   const [isSorted, setIsSorted] = useState(false);
-  const graphData = { nodes: graphNodes, edges: sampleGraph };
+  const graphData = { nodes: [], edges: {} };
   const { user, updateStats, updateProgress} = useAuth();
   
   const timerRef = useRef(null);
@@ -128,21 +130,37 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
     }
   }, [user, selectedAlgorithm, steps.length, updateProgress, updateStats]);
 
-  // Генерация шагов
+  // Генерация шагов для массивов (при изменении массива или алгоритма)
   useEffect(() => {
     const algorithm = algorithms[selectedAlgorithm];
-    if (!algorithm || !algorithm.function) {
-      console.error('Алгоритм не найден:', selectedAlgorithm);
-      return;
-    }
+    if (!algorithm || !algorithm.function) return;
     
-    const newSteps = algorithm.function(array);
-    setSteps(newSteps);
-    setCurrentStep(0);
-    setIsSorted(false);
-    setIsPlaying(false);
+    // Только для НЕ графовых алгоритмов
+    if (algorithm.type !== 'graph') {
+      const newSteps = algorithm.function(array);
+      setSteps(newSteps);
+      setCurrentStep(0);
+      setIsSorted(false);
+      setIsPlaying(false);
+    }
   }, [array, selectedAlgorithm]);
-  
+
+  // Генерация шагов для графов (при смене алгоритма на графовый)
+  useEffect(() => {
+    const algorithm = algorithms[selectedAlgorithm];
+    if (!algorithm || !algorithm.function) return;
+    
+    // Только для графовых алгоритмов
+    if (algorithm.type === 'graph') {
+      const currentGraph = getCurrentGraph();
+      const newSteps = algorithm.function(currentGraph);
+      setSteps(newSteps);
+      setCurrentStep(0);
+      setIsSorted(false);
+      setIsPlaying(false);
+    }
+  }, [selectedAlgorithm]);
+
   // Логика анимации
   useEffect(() => {
     if (timerRef.current) {
@@ -184,13 +202,30 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
   const prevAlgorithmRef = useRef(selectedAlgorithm);
 
   // Функции управления
-  const handleNewArray = () => {
+  const handleNewData = () => {
     setIsPlaying(false);
-    const newSize = Math.floor(Math.random() * 6) + 5;
-    setArray(generateArray(newSize));
-    hasSavedRef.current = false;
-    progressSavedRef.current = false;  // ← сброс
-    setIsSorted(false);
+    
+    if (isGraphAlgorithm) {
+      // Принудительно обновляем граф через refreshGraph
+      const newGraph = refreshGraph(8, 0.3);
+      const algorithm = algorithms[selectedAlgorithm];
+      if (algorithm && algorithm.function) {
+        const newSteps = algorithm.function(newGraph);
+        setSteps(newSteps);
+        setCurrentStep(0);
+        setIsSorted(false);
+        hasSavedRef.current = false;
+        progressSavedRef.current = false;
+      }
+    } else {
+      // Для массивов - генерируем новый массив
+      const newSize = getArraySizeByAlgorithm(selectedAlgorithm);
+      const newArray = generateArray(newSize);
+      setArray(newArray);
+      hasSavedRef.current = false;
+      progressSavedRef.current = false;
+      setIsSorted(false);
+    }
   };
   
   const handlePlayPause = () => {
@@ -313,7 +348,7 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
             currentLine={currentStepData.codeLine}
             variables={currentStepData.variables || {}}
             stepDescription={currentStepData.description}
-            onNewData={handleNewArray}
+            onNewData={handleNewData}
             onStepBack={handleStepBackward}
             onStepForward={handleStepForward}
             onPlayPause={handlePlayPause}

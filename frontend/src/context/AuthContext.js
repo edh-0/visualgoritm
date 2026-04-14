@@ -1,7 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_URL = 'https://visualgorithm.ru';
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://visualgorithm.ru' 
+  : 'http://localhost:5000';
 
 const AuthContext = createContext();
 

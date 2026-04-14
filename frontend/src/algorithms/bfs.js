@@ -1,6 +1,7 @@
 /**
  * BFS (Обход в ширину) для графа
  */
+import { getRandomStartNode, getCurrentGraph } from './randomGraph';
 
 export const bfsCode = [
   { line: 1, code: 'function BFS(graph, startNode) {' },
@@ -20,51 +21,49 @@ export const bfsCode = [
   { line: 15, code: '}' }
 ];
 
-// Пример графа для визуализации
-export const sampleGraph = {
-  0: [1, 2],
-  1: [0, 3, 4],
-  2: [0, 5],
-  3: [1],
-  4: [1, 5],
-  5: [2, 4]
-};
-
-export const graphNodes = [
-  { id: 0, label: 'A', x: 100, y: 100 },
-  { id: 1, label: 'B', x: 300, y: 50 },
-  { id: 2, label: 'C', x: 300, y: 200 },
-  { id: 3, label: 'D', x: 500, y: 50 },
-  { id: 4, label: 'E', x: 500, y: 150 },
-  { id: 5, label: 'F', x: 500, y: 250 }
-];
-
-export function bfsSteps(graph = sampleGraph, startNode = 0) {
+export function bfsSteps(graphData = null, startNode = null) {
+  // Используем переданный граф или текущий
+  let graph, nodes;
+  
+  if (graphData) {
+    graph = graphData.graph;
+    nodes = graphData.nodes;
+  } else {
+    const current = getCurrentGraph();
+    graph = current.graph;
+    nodes = current.nodes;
+  }
+  
+  const nodeCount = nodes.length;
+  
+  if (startNode === null || startNode >= nodeCount) {
+    startNode = getRandomStartNode(nodeCount);
+  }
+  
   const steps = [];
   const visited = new Set();
   const queue = [startNode];
   const visitedOrder = [];
   
-  // Начальное состояние
   steps.push({
-    graph: { nodes: graphNodes, edges: graph },
+    graph: { nodes, edges: graph },
     visitedNodes: [],
     queueNodes: [startNode],
     currentNode: null,
-    description: `Начинаем обход графа в ширину с узла ${startNode}`,
+    description: `🌲 Начинаем обход графа в ширину с узла ${startNode} (${nodes[startNode].label})`,
     codeLine: 1,
-    variables: { startNode, queue: [startNode], visited: [] }
+    variables: { startNode, queue: [startNode], visited: [], nodeCount }
   });
   
   visited.add(startNode);
   visitedOrder.push(startNode);
   
   steps.push({
-    graph: { nodes: graphNodes, edges: graph },
+    graph: { nodes, edges: graph },
     visitedNodes: [startNode],
     queueNodes: [startNode],
     currentNode: null,
-    description: `Помещаем узел ${startNode} в очередь и отмечаем как посещенный`,
+    description: `📌 Помещаем узел ${startNode} (${nodes[startNode].label}) в очередь и отмечаем как посещенный`,
     codeLine: 4,
     variables: { startNode, queue: [startNode], visited: [startNode] }
   });
@@ -73,25 +72,24 @@ export function bfsSteps(graph = sampleGraph, startNode = 0) {
     const node = queue.shift();
     
     steps.push({
-      graph: { nodes: graphNodes, edges: graph },
-      visitedNodes: visitedOrder,
+      graph: { nodes, edges: graph },
+      visitedNodes: [...visitedOrder],
       queueNodes: [...queue],
       currentNode: node,
-      description: `Извлекаем узел ${node} из очереди и обрабатываем его`,
+      description: `🔄 Извлекаем узел ${node} (${nodes[node].label}) из очереди и обрабатываем его`,
       codeLine: 6,
       variables: { currentNode: node, queue: [...queue] }
     });
     
-    // Получаем соседей
     const neighbors = graph[node] || [];
     
     for (const neighbor of neighbors) {
       steps.push({
-        graph: { nodes: graphNodes, edges: graph },
-        visitedNodes: visitedOrder,
+        graph: { nodes, edges: graph },
+        visitedNodes: [...visitedOrder],
         queueNodes: [...queue],
         currentNode: node,
-        description: `Проверяем соседа ${neighbor} узла ${node}`,
+        description: `🔍 Проверяем соседа ${neighbor} (${nodes[neighbor].label}) узла ${node} (${nodes[node].label})`,
         codeLine: 8,
         variables: { currentNode: node, neighbor, queue: [...queue] }
       });
@@ -102,21 +100,21 @@ export function bfsSteps(graph = sampleGraph, startNode = 0) {
         queue.push(neighbor);
         
         steps.push({
-          graph: { nodes: graphNodes, edges: graph },
-          visitedNodes: visitedOrder,
+          graph: { nodes, edges: graph },
+          visitedNodes: [...visitedOrder],
           queueNodes: [...queue],
           currentNode: node,
-          description: `✅ Добавляем узел ${neighbor} в очередь и отмечаем как посещенный`,
+          description: `✅ Добавляем узел ${neighbor} (${nodes[neighbor].label}) в очередь и отмечаем как посещенный`,
           codeLine: 10,
           variables: { currentNode: node, neighbor, queue: [...queue], visited: [...visitedOrder] }
         });
       } else {
         steps.push({
-          graph: { nodes: graphNodes, edges: graph },
-          visitedNodes: visitedOrder,
+          graph: { nodes, edges: graph },
+          visitedNodes: [...visitedOrder],
           queueNodes: [...queue],
           currentNode: node,
-          description: `Узел ${neighbor} уже посещен, пропускаем`,
+          description: `⏭️ Узел ${neighbor} (${nodes[neighbor].label}) уже посещен, пропускаем`,
           codeLine: 12,
           variables: { currentNode: node, neighbor, visited: [...visitedOrder] }
         });
@@ -124,13 +122,12 @@ export function bfsSteps(graph = sampleGraph, startNode = 0) {
     }
   }
   
-  // Финальное состояние
   steps.push({
-    graph: { nodes: graphNodes, edges: graph },
+    graph: { nodes, edges: graph },
     visitedNodes: visitedOrder,
     queueNodes: [],
     currentNode: null,
-    description: `✅ Обход в ширину завершен! Порядок обхода: ${visitedOrder.join(' → ')}`,
+    description: `✅ Обход в ширину завершен! Посещено ${visitedOrder.length} из ${nodeCount} узлов. Порядок: ${visitedOrder.map(v => nodes[v].label).join(' → ')}`,
     codeLine: 14,
     variables: { visitedOrder, totalNodes: visitedOrder.length }
   });
@@ -149,7 +146,6 @@ export const bfsInfo = {
 export const bfsTheory = {
   title: "🌐 BFS (Обход в ширину)",
   principle: "Обходит граф в ширину: сначала все соседи стартовой вершины, затем их соседи и так далее. Использует очередь.",
-  
   steps: [
     "1. Помещаем стартовую вершину в очередь и отмечаем как посещённую",
     "2. Извлекаем вершину из очереди и обрабатываем её",
@@ -157,24 +153,23 @@ export const bfsTheory = {
     "4. Отмечаем их как посещённые",
     "5. Повторяем шаги 2-4, пока очередь не опустеет"
   ],
-  
   pros: [
     "✅ Находит кратчайший путь в невзвешенном графе",
     "✅ Полный обход (посетит все достижимые вершины)",
     "✅ Линейная сложность O(V+E)",
     "✅ Простая реализация"
   ],
-  
   cons: [
     "❌ Требует много памяти (хранит всю очередь)",
     "❌ Не находит кратчайший путь во взвешенных графах",
     "❌ Может быть медленным в очень широких графах"
   ],
-  
-  example: "Старт A: A → B, C → D, E, F\n\n" +
-    "Порядок обхода: A → B → C → D → E → F",
-  
+  example: "BFS находит кратчайший путь от стартовой вершины до всех остальных.",
   whenToUse: "Поиск кратчайшего пути в лабиринте, социальные сети (друзья друзей), веб-краулеры, анализ сетей.",
-  
   visualHint: "Зелёные узлы — посещены. Жёлтые — в очереди. Синий — текущий обрабатываемый узел."
 };
+
+// Для обратной совместимости
+const initialGraph = getCurrentGraph();
+export const sampleGraph = initialGraph.graph;
+export const graphNodes = initialGraph.nodes;

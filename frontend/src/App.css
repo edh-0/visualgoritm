@@ -511,3 +511,13 @@ body {
   color: #4ec9b0;
   margin-left: auto;
 }
+
+.new-graph {
+  background: #2a2a3a;
+  border-color: #9b59b6;
+}
+
+.new-graph:hover {
+  background: #3a3a4a;
+  border-color: #b06cc9;
+}

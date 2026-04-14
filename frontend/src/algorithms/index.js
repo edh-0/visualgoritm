@@ -11,8 +11,8 @@ import { binarySearchSteps, binarySearchInfo, binarySearchCode, binarySearchTheo
 import { linearSearchSteps, linearSearchInfo, linearSearchCode, linearSearchTheory } from './linearSearch';
 
 // Графы
-import { bfsSteps, bfsInfo, bfsCode, sampleGraph, graphNodes, bfsTheory } from './bfs';
-import { dfsSteps, dfsInfo, dfsCode, dfsTheory, dfsGraph, dfsNodes } from './dfs';
+import { bfsSteps, bfsInfo, bfsCode, bfsTheory } from './bfs';
+import { dfsSteps, dfsInfo, dfsCode, dfsTheory } from './dfs';
 
 // Экспорт сортировок
 export { bubbleSortSteps, bubbleSortInfo, bubbleSortCode, bubbleSortTheory };
@@ -25,8 +25,8 @@ export { binarySearchSteps, binarySearchInfo, binarySearchCode, binarySearchTheo
 export { linearSearchSteps, linearSearchInfo, linearSearchCode, linearSearchTheory };
 
 // Экспорт графов
-export { bfsSteps, bfsInfo, bfsCode, sampleGraph, graphNodes, bfsTheory };
-export { dfsSteps, dfsInfo, dfsCode, dfsTheory, dfsGraph, dfsNodes };
+export { bfsSteps, bfsInfo, bfsCode, bfsTheory };
+export { dfsSteps, dfsInfo, dfsCode, dfsTheory };
 
 // Объект со всеми алгоритмами
 export const algorithms = {
@@ -37,7 +37,7 @@ export const algorithms = {
     function: bubbleSortSteps,
     info: bubbleSortInfo,
     code: bubbleSortCode,
-    theory: bubbleSortTheory 
+    theory: bubbleSortTheory
   },
   selection: {
     type: 'sorting',
@@ -55,13 +55,13 @@ export const algorithms = {
     code: insertionSortCode,
     theory: insertionSortTheory
   },
-    quick: {
+  quick: {
     type: 'sorting',
     name: "Быстрая",
     function: quickSortSteps,
     info: quickSortInfo,
     code: quickSortCode,
-    theory: quickSortTheory 
+    theory: quickSortTheory
   },
   // Поиск
   binarySearch: {
@@ -86,7 +86,7 @@ export const algorithms = {
   bfs: {
     type: 'graph',
     name: "BFS (Обход в ширину)",
-    function: () => bfsSteps(),
+    function: (graphData) => bfsSteps(graphData),
     info: bfsInfo,
     code: bfsCode,
     theory: bfsTheory,
@@ -95,7 +95,7 @@ export const algorithms = {
   dfs: {
     type: 'graph',
     name: "DFS (Обход в глубину)",
-    function: () => dfsSteps(),
+    function: (graphData) => dfsSteps(graphData),
     info: dfsInfo,
     code: dfsCode,
     theory: dfsTheory,
@@ -113,12 +113,12 @@ export const algorithmCategories = [
   {
     id: 'search',
     name: '🔍 Поиск',
-    algorithms: ['binarySearch']
+    algorithms: ['binarySearch', 'linearSearch']
   },
   {
     id: 'graph',
     name: '🕸️ Графы',
-    algorithms: ['bfs']
+    algorithms: ['bfs', 'dfs']
   }
 ];
 
