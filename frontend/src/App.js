@@ -12,6 +12,9 @@ import GraphVisualizer from './components/GraphVisualizer';
 import { algorithms } from './algorithms';
 import TheoryPanel from './components/TheoryPanel';
 import { generateNewGraph, getCurrentGraph, refreshGraph } from './algorithms/randomGraph';
+import WeightedGraphVisualizer from './components/WeightedGraphVisualizer';
+import { refreshWeightedGraph, getCurrentWeightedGraph } from './algorithms/weightedRandomGraph';
+import { dijkstraSteps } from './algorithms/dijkstra';
 
 // Компонент для кнопки входа
 const LoginButton = ({ onClick }) => (
@@ -65,6 +68,7 @@ const AppContent = () => {
                 <div className="category-items">
                   <span onClick={() => setSelectedAlgorithm('bfs')}>BFS (обход в ширину)</span>
                   <span onClick={() => setSelectedAlgorithm('dfs')}>DFS (обход в глубину)</span>
+                      <span onClick={() => setSelectedAlgorithm('dijkstra')}> Алгоритм Дейкстры</span>
                 </div>
               </div>
             </div>
@@ -109,8 +113,8 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
   const { user, updateStats, updateProgress} = useAuth();
   
   const timerRef = useRef(null);
-  const isGraphAlgorithm = algorithms[selectedAlgorithm]?.type === 'graph';
-
+  const isGraphAlgorithm = algorithms[selectedAlgorithm]?.type === 'graph' || algorithms[selectedAlgorithm]?.type === 'weightedGraph';
+  const [weightedGraphData, setWeightedGraphData] = useState(null);
 
   const saveAlgorithmCompletion = useCallback(() => {
     if (!user) return;
@@ -130,13 +134,26 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
     }
   }, [user, selectedAlgorithm, steps.length, updateProgress, updateStats]);
 
+// Инициализация взвешенного графа
+  useEffect(() => {
+    const newGraph = refreshWeightedGraph(6, 0.4);
+    setWeightedGraphData(newGraph);
+    
+    // Если выбран Дейкстра, генерируем шаги
+    if (selectedAlgorithm === 'dijkstra') {
+      const newSteps = dijkstraSteps(newGraph);
+      setSteps(newSteps);
+      setCurrentStep(0);
+    }
+  }, []); // Только при монтировании
+
   // Генерация шагов для массивов (при изменении массива или алгоритма)
   useEffect(() => {
     const algorithm = algorithms[selectedAlgorithm];
     if (!algorithm || !algorithm.function) return;
     
     // Только для НЕ графовых алгоритмов
-    if (algorithm.type !== 'graph') {
+    if (algorithm.type !== 'graph' && algorithm.type !== 'weightedGraph') {
       const newSteps = algorithm.function(array);
       setSteps(newSteps);
       setCurrentStep(0);
@@ -145,12 +162,12 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
     }
   }, [array, selectedAlgorithm]);
 
-  // Генерация шагов для графов (при смене алгоритма на графовый)
+  // Генерация шагов для графов (при смене алгоритма или обновлении данных)
   useEffect(() => {
     const algorithm = algorithms[selectedAlgorithm];
     if (!algorithm || !algorithm.function) return;
     
-    // Только для графовых алгоритмов
+    // Для обычных графов (BFS, DFS)
     if (algorithm.type === 'graph') {
       const currentGraph = getCurrentGraph();
       const newSteps = algorithm.function(currentGraph);
@@ -159,7 +176,18 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
       setIsSorted(false);
       setIsPlaying(false);
     }
-  }, [selectedAlgorithm]);
+    // Для взвешенных графов (Дейкстра)
+    else if (algorithm.type === 'weightedGraph') {
+      if (weightedGraphData) {
+        const newSteps = algorithm.function(weightedGraphData);
+        console.log('📊 Сгенерированы шаги для Дейкстры:', newSteps.length);
+        setSteps(newSteps);
+        setCurrentStep(0);
+        setIsSorted(false);
+        setIsPlaying(false);
+      }
+    }
+  }, [selectedAlgorithm, weightedGraphData]);
 
   // Логика анимации
   useEffect(() => {
@@ -206,16 +234,26 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
     setIsPlaying(false);
     
     if (isGraphAlgorithm) {
-      // Принудительно обновляем граф через refreshGraph
-      const newGraph = refreshGraph(8, 0.3);
-      const algorithm = algorithms[selectedAlgorithm];
-      if (algorithm && algorithm.function) {
-        const newSteps = algorithm.function(newGraph);
-        setSteps(newSteps);
-        setCurrentStep(0);
-        setIsSorted(false);
-        hasSavedRef.current = false;
-        progressSavedRef.current = false;
+      const algorithmType = algorithms[selectedAlgorithm]?.type;
+      let newGraph;
+      
+      if (algorithmType === 'weightedGraph') {
+        // Для взвешенных графов (Дейкстра)
+        newGraph = refreshWeightedGraph(6, 0.4);
+        setWeightedGraphData(newGraph);
+        // Шаги обновятся через useEffect, который зависит от weightedGraphData
+      } else {
+        // Для обычных графов (BFS, DFS)
+        newGraph = refreshGraph(8, 0.3);
+        const algorithm = algorithms[selectedAlgorithm];
+        if (algorithm && algorithm.function) {
+          const newSteps = algorithm.function(newGraph);
+          setSteps(newSteps);
+          setCurrentStep(0);
+          setIsSorted(false);
+          hasSavedRef.current = false;
+          progressSavedRef.current = false;
+        }
       }
     } else {
       // Для массивов - генерируем новый массив
@@ -320,13 +358,20 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
                   </span>
                 </div>
               </div>
-                {isGraphAlgorithm ? (
-                <GraphVisualizer
-                  graph={currentStepData.graph || graphData}
-                  visitedNodes={currentStepData.visitedNodes || []}
-                  queueNodes={currentStepData.queueNodes || []}
-                  currentNode={currentStepData.currentNode}
-                />
+                {algorithms[selectedAlgorithm]?.type === 'weightedGraph' ? (
+                  <WeightedGraphVisualizer
+                    graph={currentStepData.graph || (weightedGraphData ? { nodes: weightedGraphData.nodes, edges: weightedGraphData.graph } : null)}
+                    distances={currentStepData.distances || {}}
+                    visitedNodes={currentStepData.visitedNodes || []}
+                    currentNode={currentStepData.currentNode}
+                  />
+                ) : isGraphAlgorithm ? (
+                  <GraphVisualizer
+                    graph={currentStepData.graph || graphData}
+                    visitedNodes={currentStepData.visitedNodes || []}
+                    queueNodes={currentStepData.queueNodes || []}
+                    currentNode={currentStepData.currentNode}
+                  />
                 ) : (
                   <ArrayVisualizer
                     array={currentStepData.array}

@@ -13,6 +13,7 @@ import { linearSearchSteps, linearSearchInfo, linearSearchCode, linearSearchTheo
 // Графы
 import { bfsSteps, bfsInfo, bfsCode, bfsTheory } from './bfs';
 import { dfsSteps, dfsInfo, dfsCode, dfsTheory } from './dfs';
+import { dijkstraSteps, dijkstraInfo, dijkstraCode, dijkstraTheory } from './dijkstra';
 
 // Экспорт сортировок
 export { bubbleSortSteps, bubbleSortInfo, bubbleSortCode, bubbleSortTheory };
@@ -100,6 +101,16 @@ export const algorithms = {
     code: dfsCode,
     theory: dfsTheory,
     isGraph: true
+  },
+  dijkstra: {
+    type: 'weightedGraph',
+    name: "Алгоритм Дейкстры",
+    function: (graphData) => dijkstraSteps(graphData),
+    info: dijkstraInfo,
+    code: dijkstraCode,
+    theory: dijkstraTheory,
+    isGraph: true,
+    isWeighted: true
   }
 };
 
@@ -118,7 +129,7 @@ export const algorithmCategories = [
   {
     id: 'graph',
     name: '🕸️ Графы',
-    algorithms: ['bfs', 'dfs']
+    algorithms: ['bfs', 'dfs', 'dijkstra']
   }
 ];
 
@@ -134,5 +145,6 @@ export const algorithmList = [
   { id: 'linearSearch', label: '🔍 Линейный поиск', category: 'search' },
   //графы
   { id: 'bfs', label: '🌐 BFS - Обход графа в ширину', category: 'graph' },
-  { id: 'dfs', label: '🌐 DFS - Обход графа в глубину', category: 'graph' }
+  { id: 'dfs', label: '🌐 DFS - Обход графа в глубину', category: 'graph' },
+  { id: 'dijkstra', label: '🛣️ Алгоритм Дейкстры (кратчайшие пути)', category: 'weightedGraph' }
 ];
