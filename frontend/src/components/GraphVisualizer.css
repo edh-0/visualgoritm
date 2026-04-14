@@ -1,0 +1,60 @@
+.graph-visualizer {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #2a2a2a;
+}
+
+.graph-canvas {
+  display: block;
+  margin: 0 auto;
+  background: #1e1e1e;
+  border-radius: 8px;
+  width: 100%;
+  height: auto;
+}
+
+.graph-info {
+  margin-top: 16px;
+}
+
+.graph-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.legend-color.current {
+  background: #4ec9b0;
+  border: 2px solid #4ec9b0;
+}
+
+.legend-color.visited {
+  background: #2a5a3a;
+  border: 2px solid #4ec9b0;
+}
+
+.legend-color.queue {
+  background: #5a4a2a;
+  border: 2px solid #dcdcaa;
+}
+
+.legend-color.unvisited {
+  background: #2a2a2a;
+  border: 2px solid #3a3a3a;
+}

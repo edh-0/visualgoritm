@@ -1,32 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { generateArray } from './utils/generateArray';
-import { 
-  algorithms, 
-  algorithmList 
-} from './algorithms';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/auth/AuthModal';
 import UserMenu from './components/auth/UserMenu';
 import ArrayVisualizer from './components/ArrayVisualizer';
-
-// ==================== КОМПОНЕНТЫ АВТОРИЗАЦИИ ====================
+import CodeDebugger from './components/CodeDebugger';
+import GraphVisualizer from './components/GraphVisualizer';
+import { sampleGraph, graphNodes } from './algorithms/bfs';
+import { algorithms } from './algorithms';
+import TheoryPanel from './components/TheoryPanel';
 
 // Компонент для кнопки входа
 const LoginButton = ({ onClick }) => (
-  <button 
-    className="login-button"
-    onClick={onClick}
-  >
+  <button className="login-button" onClick={onClick}>
     Войти / Регистрация
   </button>
 );
 
-// Главный компонент с auth логикой - ОТДЕЛЬНЫЙ от AlgorithmVisualizer
+// Главный компонент с auth логикой
 const AppContent = () => {
   const { user, loading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubble');
 
   if (loading) {
     return (
@@ -42,23 +39,48 @@ const AppContent = () => {
       <header className="app-header">
         <div className="header-content">
           <h1 className="app-title">Визуализатор алгоритмов</h1>
+          <div className="algorithms-menu">
+            <button className="menu-trigger">📋 Алгоритмы ▼</button>
+            <div className="menu-dropdown">
+              <div className="menu-category">
+                <div className="category-title">📊 Сортировка</div>
+                <div className="category-items">
+                  <span onClick={() => setSelectedAlgorithm('bubble')}>Пузырьковая</span>
+                  <span onClick={() => setSelectedAlgorithm('selection')}>Выбором</span>
+                  <span onClick={() => setSelectedAlgorithm('insertion')}>Вставками</span>
+                  <span onClick={() => setSelectedAlgorithm('quick')}>Быстрая</span>
+                </div>
+              </div>
+              <div className="menu-category">
+                <div className="category-title">🔍 Поиск</div>
+                <div className="category-items">
+                  <span onClick={() => setSelectedAlgorithm('binarySearch')}>Бинарный поиск</span>
+                  <span onClick={() => setSelectedAlgorithm('linearSearch')}>Линейный поиск</span>
+                </div>
+              </div>
+              <div className="menu-category">
+                <div className="category-title">🕸 Графы</div>
+                <div className="category-items">
+                  <span onClick={() => setSelectedAlgorithm('bfs')}>BFS (обход в ширину)</span>
+                  <span onClick={() => setSelectedAlgorithm('dfs')}>DFS (обход в глубину)</span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="auth-section">
-            {user ? (
-              <UserMenu />
-            ) : (
-              <LoginButton onClick={() => setIsAuthModalOpen(true)} />
-            )}
+            {user ? <UserMenu /> : <LoginButton onClick={() => setIsAuthModalOpen(true)} />}
           </div>
         </div>
       </header>
-
       <main className="app-main">
-        <AlgorithmVisualizer /> 
+        <AlgorithmVisualizer 
+          selectedAlgorithm={selectedAlgorithm}
+          onAlgorithmChange={setSelectedAlgorithm}
+        />
       </main>
-
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );
@@ -73,23 +95,41 @@ const App = () => {
   );
 };
 
-// ==================== КОМПОНЕНТ ВИЗУАЛИЗАЦИИ АЛГОРИТМОВ ====================
-
-const AlgorithmVisualizer = () => {
+// Компонент визуализации алгоритмов
+const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
   const [array, setArray] = useState(generateArray(6));
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(500);
+  const speed = 500;
   const [isSorted, setIsSorted] = useState(false);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('bubble');
+  const graphData = { nodes: graphNodes, edges: sampleGraph };
+  const { user, updateStats, updateProgress} = useAuth();
   
   const timerRef = useRef(null);
+  const isGraphAlgorithm = algorithms[selectedAlgorithm]?.type === 'graph';
+
+
+  const saveAlgorithmCompletion = useCallback(() => {
+    if (!user) return;
+    
+    // Сохраняем прогресс (алгоритм изучен)
+    if (!progressSavedRef.current) {
+      progressSavedRef.current = true;
+      updateProgress(selectedAlgorithm);
+      console.log('✅ Прогресс сохранён для:', selectedAlgorithm);
+    }
+    
+    // Сохраняем статистику выполнения
+    if (!hasSavedRef.current && steps.length > 0) {
+      hasSavedRef.current = true;
+      updateStats(selectedAlgorithm, steps.length);
+      console.log('✅ Статистика сохранена для:', selectedAlgorithm, steps.length);
+    }
+  }, [user, selectedAlgorithm, steps.length, updateProgress, updateStats]);
 
   // Генерация шагов
   useEffect(() => {
-    console.log(`Генерируем шаги для алгоритма: ${selectedAlgorithm}...`);
-    
     const algorithm = algorithms[selectedAlgorithm];
     if (!algorithm || !algorithm.function) {
       console.error('Алгоритм не найден:', selectedAlgorithm);
@@ -101,10 +141,8 @@ const AlgorithmVisualizer = () => {
     setCurrentStep(0);
     setIsSorted(false);
     setIsPlaying(false);
-    
-    console.log(`Сгенерировано ${newSteps.length} шагов`);
   }, [array, selectedAlgorithm]);
-
+  
   // Логика анимации
   useEffect(() => {
     if (timerRef.current) {
@@ -118,7 +156,7 @@ const AlgorithmVisualizer = () => {
     } else if (currentStep >= steps.length - 1 && steps.length > 0) {
       setIsPlaying(false);
       setIsSorted(true);
-      console.log('✅ Сортировка завершена!');
+      saveAlgorithmCompletion(); 
     }
     
     return () => {
@@ -126,56 +164,79 @@ const AlgorithmVisualizer = () => {
         clearTimeout(timerRef.current);
       }
     };
-  }, [isPlaying, currentStep, steps.length, speed]);
+  }, [isPlaying, currentStep, steps.length, speed, saveAlgorithmCompletion]);
+  
+  // useEffect для сохранения прогресса и статистики при завершении
+  const hasSavedRef = useRef(false);
+  const progressSavedRef = useRef(false);
+  
+  useEffect(() => {
+    if (isSorted && steps.length > 0 && user && !hasSavedRef.current) {
+      hasSavedRef.current = true;
+      updateStats(selectedAlgorithm, steps.length);
+    } else if (!isSorted) {
+      // Сбрасываем флаг при новой сортировке
+      hasSavedRef.current = false;
+    }
+  }, [isSorted, steps.length, user, selectedAlgorithm, updateStats]);
+
+  // Сохраняем прогресс при смене алгоритма
+  const prevAlgorithmRef = useRef(selectedAlgorithm);
 
   // Функции управления
   const handleNewArray = () => {
     setIsPlaying(false);
     const newSize = Math.floor(Math.random() * 6) + 5;
     setArray(generateArray(newSize));
-  };
-
-  const handleAlgorithmChange = (algorithmId) => {
-    setIsPlaying(false);
-    setSelectedAlgorithm(algorithmId);
-    setCurrentStep(0);
+    hasSavedRef.current = false;
+    progressSavedRef.current = false;  // ← сброс
     setIsSorted(false);
   };
-
+  
   const handlePlayPause = () => {
     if (isSorted) {
       setCurrentStep(0);
       setIsSorted(false);
+      setIsPlaying(true);
+      progressSavedRef.current = false; // Сбрасываем флаг при повторном запуске
+    } else {
+      setIsPlaying(!isPlaying);
     }
-    setIsPlaying(!isPlaying);
+    
+    // Сохраняем прогресс при первом запуске (не пауза)
+    if (!isPlaying && !isSorted && user && !progressSavedRef.current) {
+      progressSavedRef.current = true;
+      updateProgress(selectedAlgorithm);
+    }
   };
-
+  
   const handleReset = () => {
     setIsPlaying(false);
     setCurrentStep(0);
     setIsSorted(false);
   };
-
+  
   const handleStepForward = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
       setIsPlaying(false);
     }
   };
-
+  
   const handleStepBackward = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
       setIsPlaying(false);
     }
   };
-
-  const handleSpeedChange = (newSpeed) => {
-    setSpeed(newSpeed);
-    if (isPlaying) {
-      setIsPlaying(false);
-      setTimeout(() => setIsPlaying(true), 10);
-    }
+  
+  const handleAlgorithmChange = (algorithmId) => {
+    setIsPlaying(false);
+    onAlgorithmChange(algorithmId);
+    setCurrentStep(0);
+    setIsSorted(false);
+    hasSavedRef.current = false;
+    progressSavedRef.current = false;  // ← сброс
   };
 
   // Данные текущего шага
@@ -183,190 +244,108 @@ const AlgorithmVisualizer = () => {
     array: array,
     comparing: [],
     swapped: [],
-    description: "Готов к сортировке..."
+    description: "Готов к сортировке...",
+    codeLine: 1,
+    variables: {}
   };
-
+  
+  // Получаем код текущего алгоритма
+  const currentCode = algorithms[selectedAlgorithm]?.code || [];
+  
   // Прогресс в процентах
-  const progressPercent = steps.length > 0 
-    ? Math.round((currentStep / (steps.length - 1)) * 100) 
+  const progressPercent = steps.length > 0
+    ? Math.round((currentStep / (steps.length - 1)) * 100)
     : 0;
 
-  // ==================== РЕНДЕР КОМПОНЕНТА ВИЗУАЛИЗАЦИИ ====================
-
   return (
-    <div className="algorithm-visualizer">
-      <div className="visualization-section">
-      <ArrayVisualizer
-        array={currentStepData.array}
-        comparing={currentStepData.comparing}
-        swapped={currentStepData.swapped}
-      />
-        
-        <div className={`step-description ${isSorted ? 'sorted' : ''}`}>
-          {isSorted ? '✅ ' : '📝 '}
-          {currentStepData.description}
-        </div>
-        
-        <div className="algorithm-info">
-          <h3>{algorithms[selectedAlgorithm]?.info.name || 'Алгоритм'}</h3>
-          <div className="complexity">
-            <span className="complexity-item">
-              <strong>Сложность по времени:</strong> {algorithms[selectedAlgorithm]?.info.timeComplexity}
-            </span>
-            <span className="complexity-item">
-              <strong>Память:</strong> {algorithms[selectedAlgorithm]?.info.spaceComplexity}
-            </span>
+    <div className="algorithm-visualizer">      
+      {/* Двухколоночный layout */}
+      <div className="visualization-layout">
+        {/* Левая колонка - визуализация*/}
+        <div className="visualization-column">
+          <div className="visualization-section">
+            <h3 className="section-title">{'Визуализация алгоритма'}</h3>
+              <div className="stats">
+                <div className="stat">
+                  <span className="stat-label">Элементов:</span>
+                  <span className="stat-value">{array.length}</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-label">Всего шагов:</span>
+                  <span className="stat-value">{steps.length}</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-label">Прогресс:</span>
+                  <span className="stat-value">{progressPercent}%</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-label">Статус:</span>
+                  <span className={`stat-value ${isSorted ? 'sorted' : ''}`}>
+                    {isSorted ? '✅ Выполнено' : isPlaying ? '▶ Выполняется...' : '⏸ Пауза'}
+                  </span>
+                </div>
+              </div>
+                {isGraphAlgorithm ? (
+                <GraphVisualizer
+                  graph={currentStepData.graph || graphData}
+                  visitedNodes={currentStepData.visitedNodes || []}
+                  queueNodes={currentStepData.queueNodes || []}
+                  currentNode={currentStepData.currentNode}
+                />
+                ) : (
+                  <ArrayVisualizer
+                    array={currentStepData.array}
+                    comparing={currentStepData.comparing}
+                    swapped={currentStepData.swapped}
+                  />
+                )}
+            <div className={`step-description ${isSorted ? 'sorted' : ''}`}>
+              {isSorted ? '✅ ' : '📝 '}
+              {currentStepData.description}
+            </div>
           </div>
-          <p className="algorithm-description">
-            {algorithms[selectedAlgorithm]?.info.description}
-          </p>
         </div>
         
-        <div className="progress-container">
-          <div 
-            className="progress-bar" 
-            style={{ width: `${progressPercent}%` }}
-          ></div>
-          <span className="progress-text">
-            Шаг {currentStep + 1} из {steps.length} ({progressPercent}%)
+        {/* Правая колонка - отладка кода */}
+        <div className="debugger-column">
+          <CodeDebugger
+            code={currentCode}
+            currentLine={currentStepData.codeLine}
+            variables={currentStepData.variables || {}}
+            stepDescription={currentStepData.description}
+            onNewData={handleNewArray}
+            onStepBack={handleStepBackward}
+            onStepForward={handleStepForward}
+            onPlayPause={handlePlayPause}
+            onReset={handleReset}
+            isPlaying={isPlaying}
+            isSorted={isSorted}
+            canStepBack={currentStep > 0}
+            canStepForward={currentStep < steps.length - 1}
+          />
+        </div>
+      </div>
+      
+      {/* Информация об алгоритме (краткая) */}
+{/*       <div className="algorithm-info">
+        <h3>{algorithms[selectedAlgorithm]?.info.name || 'Алгоритм'}</h3>
+        <div className="complexity">
+          <span className="complexity-item">
+            <strong>Сложность по времени:</strong> {algorithms[selectedAlgorithm]?.info.timeComplexity}
+          </span>
+          <span className="complexity-item">
+            <strong>Память:</strong> {algorithms[selectedAlgorithm]?.info.spaceComplexity}
           </span>
         </div>
+        <p className="algorithm-description">
+          {algorithms[selectedAlgorithm]?.info.description}
+        </p>
       </div>
-
-      <div className="controls-panel">
-        <div className="algorithm-selector">
-          <label htmlFor="algorithm-select">Выберите алгоритм:</label>
-          <select 
-            id="algorithm-select"
-            value={selectedAlgorithm}
-            onChange={(e) => handleAlgorithmChange(e.target.value)}
-            className="algorithm-dropdown"
-          >
-            {algorithmList.map(algo => (
-              <option key={algo.id} value={algo.id}>
-                {algo.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        <div className="button-group">
-          <button className="btn new-array" onClick={handleNewArray}>
-            🎲 Новый массив
-          </button>
-          <button 
-            className="btn step-back"
-            onClick={handleStepBackward}
-            disabled={currentStep === 0}
-          >
-            ⏪ Шаг назад
-          </button>
-          <button 
-            className={`btn play-pause ${isPlaying ? 'pause' : 'play'}`}
-            onClick={handlePlayPause}
-          >
-            {isPlaying ? '⏸ Пауза' : isSorted ? '🔄 С начала' : '▶ Старт'}
-          </button>
-          <button 
-            className="btn step-forward"
-            onClick={handleStepForward}
-            disabled={currentStep >= steps.length - 1}
-          >
-            ⏩ Шаг вперёд
-          </button>
-          <button className="btn reset" onClick={handleReset}>
-            🔄 Сброс
-          </button>
-        </div>
-        
-        <div className="speed-control">
-          <label>Скорость анимации:</label>
-          <input
-            type="range"
-            min="50"
-            max="1000"
-            step="50"
-            value={1000 - speed}
-            onChange={(e) => handleSpeedChange(1000 - parseInt(e.target.value))}
-            className="speed-slider"
-          />
-          <div className="speed-labels">
-            <span>Быстро ({speed}мс)</span>
-            <span>Медленно</span>
-          </div>
-        </div>
-        
-        <div className="stats">
-          <div className="stat">
-            <span className="stat-label">Элементов:</span>
-            <span className="stat-value">{array.length}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">Всего шагов:</span>
-            <span className="stat-value">{steps.length}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">Статус:</span>
-            <span className={`stat-value ${isSorted ? 'sorted' : ''}`}>
-              {isSorted ? 'Отсортировано' : isPlaying ? 'Сортируется...' : 'Готово'}
-            </span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="array-info">
-        <details>
-          <summary>📊 Информация о массиве (кликните чтобы раскрыть)</summary>
-          <div className="info-content">
-            <p>Текущие значения: <code>[{currentStepData.array.join(', ')}]</code></p>
-            <p>Сравниваемые индексы: <code>[{currentStepData.comparing.join(', ') || 'нет'}]</code></p>
-            <p>Обменяные индексы: <code>[{currentStepData.swapped.join(', ') || 'нет'}]</code></p>
-            <p>Сгенерированные шаги: {steps.length}</p>
-          </div>
-        </details>
-      </div>
-      
-      <div className="comparison-section">
-        <h3>📊 Сравнение алгоритмов</h3>
-        <div className="algorithm-cards">
-          {Object.entries(algorithms).map(([id, algo]) => (
-            <div 
-              key={id}
-              className={`algorithm-card ${selectedAlgorithm === id ? 'selected' : ''}`}
-              onClick={() => handleAlgorithmChange(id)}
-            >
-              <h4>{algo.info.name}</h4>
-              <div className="algorithm-stats">
-                <div><strong>Сложность:</strong> {algo.info.timeComplexity}</div>
-                <div><strong>Память:</strong> {algo.info.spaceComplexity}</div>
-                <div><strong>Шагов для текущего массива:</strong> {algo.function(array).length}</div>
-              </div>
-              <p>{algo.info.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="live-stats">
-        <div className="stat-card">
-          <div className="stat-title">Текущий алгоритм</div>
-          <div className="stat-value">{algorithms[selectedAlgorithm]?.name || '—'}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-title">Всего шагов</div>
-          <div className="stat-value">{steps.length}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-title">Текущий шаг</div>
-          <div className="stat-value">{currentStep + 1}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-title">Скорость</div>
-          <div className="stat-value">{speed}мс</div>
-        </div>
-      </div>
+ */}
+      {/* Расширенная теория */}
+      <TheoryPanel theory={algorithms[selectedAlgorithm]?.theory} />
     </div>
   );
 };
 
-export default App; // Экспортируем главный App
+export default App;
