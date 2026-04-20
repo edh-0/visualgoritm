@@ -24,6 +24,9 @@
   background: #252526;
   padding: 16px 20px;
   border-bottom: 1px solid #3e3e42;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .code-header h3 {

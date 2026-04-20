@@ -19,7 +19,7 @@ import { dijkstraSteps } from './algorithms/dijkstra';
 // Компонент для кнопки входа
 const LoginButton = ({ onClick }) => (
   <button className="login-button" onClick={onClick}>
-    Войти / Регистрация
+    Войти
   </button>
 );
 
@@ -41,43 +41,51 @@ const AppContent = () => {
 
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">Визуализатор алгоритмов</h1>
-          <div className="algorithms-menu">
-            <button className="menu-trigger">📋 Алгоритмы ▼</button>
-            <div className="menu-dropdown">
-              <div className="menu-category">
-                <div className="category-title">📊 Сортировка</div>
-                <div className="category-items">
-                  <span onClick={() => setSelectedAlgorithm('bubble')}>Пузырьковая</span>
-                  <span onClick={() => setSelectedAlgorithm('selection')}>Выбором</span>
-                  <span onClick={() => setSelectedAlgorithm('insertion')}>Вставками</span>
-                  <span onClick={() => setSelectedAlgorithm('quick')}>Быстрая</span>
-                </div>
-              </div>
-              <div className="menu-category">
-                <div className="category-title">🔍 Поиск</div>
-                <div className="category-items">
-                  <span onClick={() => setSelectedAlgorithm('binarySearch')}>Бинарный поиск</span>
-                  <span onClick={() => setSelectedAlgorithm('linearSearch')}>Линейный поиск</span>
-                </div>
-              </div>
-              <div className="menu-category">
-                <div className="category-title">🕸 Графы</div>
-                <div className="category-items">
-                  <span onClick={() => setSelectedAlgorithm('bfs')}>BFS (обход в ширину)</span>
-                  <span onClick={() => setSelectedAlgorithm('dfs')}>DFS (обход в глубину)</span>
-                      <span onClick={() => setSelectedAlgorithm('dijkstra')}> Алгоритм Дейкстры</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="auth-section">
-            {user ? <UserMenu /> : <LoginButton onClick={() => setIsAuthModalOpen(true)} />}
+<header className="app-header">
+  <div className="header-content">
+    {/* Логотип */}
+    <div className="logo">
+      <img src="/logo.png" alt="VizAlgo" className="logo-icon" />
+      <span className="logo-text">VizAlgo</span>
+    </div>
+    
+    {/* Меню алгоритмов - по центру */}
+    <div className="algorithms-menu">
+      <button className="menu-trigger">📋 Алгоритмы ▼</button>
+      <div className="menu-dropdown">
+        <div className="menu-category">
+          <div className="category-title">📊 Сортировки</div>
+          <div className="category-items">
+            <span onClick={() => setSelectedAlgorithm('bubble')}>Пузырьковая сортировка</span>
+            <span onClick={() => setSelectedAlgorithm('selection')}>Сортировка выбором</span>
+            <span onClick={() => setSelectedAlgorithm('insertion')}>Сортировка вставками</span>
+            <span onClick={() => setSelectedAlgorithm('quick')}>Быстрая сортировка</span>
           </div>
         </div>
-      </header>
+        <div className="menu-category">
+          <div className="category-title">🔍 Поиск</div>
+          <div className="category-items">
+            <span onClick={() => setSelectedAlgorithm('binarySearch')}>Бинарный поиск</span>
+            <span onClick={() => setSelectedAlgorithm('linearSearch')}>Линейный поиск</span>
+          </div>
+        </div>
+        <div className="menu-category">
+          <div className="category-title">🕸 Графы</div>
+          <div className="category-items">
+            <span onClick={() => setSelectedAlgorithm('bfs')}>BFS (обход в ширину)</span>
+            <span onClick={() => setSelectedAlgorithm('dfs')}>DFS (обход в глубину)</span>
+            <span onClick={() => setSelectedAlgorithm('dijkstra')}>Алгоритм Дейкстры</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    {/* Кнопка входа / профиль */}
+    <div className="auth-section">
+      {user ? <UserMenu /> : <LoginButton onClick={() => setIsAuthModalOpen(true)} />}
+    </div>
+  </div>
+</header>
       <main className="app-main">
         <AlgorithmVisualizer 
           selectedAlgorithm={selectedAlgorithm}
@@ -337,48 +345,50 @@ const AlgorithmVisualizer = ({ selectedAlgorithm, onAlgorithmChange }) => {
         {/* Левая колонка - визуализация*/}
         <div className="visualization-column">
           <div className="visualization-section">
-            <h3 className="section-title">{'Визуализация алгоритма'}</h3>
-              <div className="stats">
-                <div className="stat">
-                  <span className="stat-label">Элементов:</span>
-                  <span className="stat-value">{array.length}</span>
+            {/* Заголовок и статистика в одной строке */}
+            <div className="section-header">
+              <h3 className="section-title">
+                {algorithms[selectedAlgorithm]?.name || 'Визуализация алгоритма'}
+              </h3>
+              <div className="stats-inline">
+                <div className="stat-inline">
+                  <span className="stat-label-inline">Всего шагов:</span>
+                 
+                  <span className="stat-value-inline">{steps.length}</span>
                 </div>
-                <div className="stat">
-                  <span className="stat-label">Всего шагов:</span>
-                  <span className="stat-value">{steps.length}</span>
+                <div className="stat-inline">
+                  <span className="stat-label-inline">Прогресс:</span>
+                  <span className="stat-value-inline">{progressPercent}%</span>
                 </div>
-                <div className="stat">
-                  <span className="stat-label">Прогресс:</span>
-                  <span className="stat-value">{progressPercent}%</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Статус:</span>
-                  <span className={`stat-value ${isSorted ? 'sorted' : ''}`}>
+                <div className="stat-inline">
+                  <span className="stat-label-inline"></span>
+                  <span className={`stat-value-inline ${isSorted ? 'sorted' : ''}`}>
                     {isSorted ? '✅ Выполнено' : isPlaying ? '▶ Выполняется...' : '⏸ Пауза'}
                   </span>
                 </div>
               </div>
-                {algorithms[selectedAlgorithm]?.type === 'weightedGraph' ? (
-                  <WeightedGraphVisualizer
-                    graph={currentStepData.graph || (weightedGraphData ? { nodes: weightedGraphData.nodes, edges: weightedGraphData.graph } : null)}
-                    distances={currentStepData.distances || {}}
-                    visitedNodes={currentStepData.visitedNodes || []}
-                    currentNode={currentStepData.currentNode}
-                  />
-                ) : isGraphAlgorithm ? (
-                  <GraphVisualizer
-                    graph={currentStepData.graph || graphData}
-                    visitedNodes={currentStepData.visitedNodes || []}
-                    queueNodes={currentStepData.queueNodes || []}
-                    currentNode={currentStepData.currentNode}
-                  />
-                ) : (
-                  <ArrayVisualizer
-                    array={currentStepData.array}
-                    comparing={currentStepData.comparing}
-                    swapped={currentStepData.swapped}
-                  />
-                )}
+            </div>
+            {algorithms[selectedAlgorithm]?.type === 'weightedGraph' ? (
+              <WeightedGraphVisualizer
+                graph={currentStepData.graph || (weightedGraphData ? { nodes: weightedGraphData.nodes, edges: weightedGraphData.graph } : null)}
+                distances={currentStepData.distances || {}}
+                visitedNodes={currentStepData.visitedNodes || []}
+                currentNode={currentStepData.currentNode}
+              />
+            ) : isGraphAlgorithm ? (
+              <GraphVisualizer
+                graph={currentStepData.graph || graphData}
+                visitedNodes={currentStepData.visitedNodes || []}
+                queueNodes={currentStepData.queueNodes || []}
+                currentNode={currentStepData.currentNode}
+              />
+            ) : (
+              <ArrayVisualizer
+                array={currentStepData.array}
+                comparing={currentStepData.comparing}
+                swapped={currentStepData.swapped}
+              />
+            )}
             <div className={`step-description ${isSorted ? 'sorted' : ''}`}>
               {isSorted ? '✅ ' : '📝 '}
               {currentStepData.description}

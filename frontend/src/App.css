@@ -521,3 +521,602 @@ body {
   background: #3a3a4a;
   border-color: #b06cc9;
 }
+
+/* Заголовок и статистика в одной строке */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #4ec9b0;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.stats-inline {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-inline {
+  display: flex;
+  flex-direction: column;  /* ← Это делает перенос строки */
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  background: #252525;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  min-width: 65px;
+}
+
+.stat-label-inline {
+  font-size: 0.75rem;
+  color: #858585;
+}
+
+.stat-value-inline {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+.stat-value-inline.sorted {
+  color: #4ec9b0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stats-inline {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .stat-inline {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Шапка */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #0f0f0f;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0.8rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Логотип */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4ec9b0;
+  letter-spacing: 1px;
+}
+
+/* Меню алгоритмов - по центру */
+.algorithms-menu {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.menu-trigger {
+  background: #2a2a2a;
+  border: 1px solid #4ec9b0;
+  color: #4ec9b0;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.menu-trigger:hover {
+  background: #3a3a3a;
+  transform: translateY(-1px);
+}
+
+/* Кнопка входа */
+.login-button {
+  background: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #3a3a3a;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-button:hover {
+  background: #3a3a3a;
+  border-color: #4ec9b0;
+}
+
+/* Секция авторизации */
+.auth-section {
+  flex-shrink: 0;
+}
+
+/* ============================================ */
+/* АДАПТИВНАЯ ВЕРСТКА ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+/* ============================================ */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+  .app-main {
+    padding: 1rem;
+  }
+  
+  .visualization-layout {
+    gap: 1rem;
+  }
+  
+  .stats-inline {
+    gap: 0.8rem;
+  }
+  
+  .stat-inline {
+    padding: 0.2rem 0.5rem;
+  }
+  
+  .stat-label-inline {
+    font-size: 0.6rem;
+  }
+  
+  .stat-value-inline {
+    font-size: 0.75rem;
+  }
+}
+
+/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+  /* Шапка */
+  .app-header {
+    padding: 0.5rem 1rem;
+  }
+  
+  .header-content {
+    gap: 10px;
+  }
+  
+  .logo-text {
+    display: none; /* Скрываем текст логотипа на мобильных */
+  }
+  
+  .logo-icon {
+    font-size: 1.3rem;
+  }
+  
+  .menu-trigger {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .login-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  /* Основной контент */
+  .app-main {
+    padding: 0.8rem;
+  }
+  
+  /* Двухколоночный layout становится вертикальным */
+  .visualization-layout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .visualization-column,
+  .debugger-column {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  /* Секция визуализации */
+  .visualization-section {
+    padding: 1rem;
+  }
+  
+  /* Заголовок и статистика */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+  }
+  
+  .stats-inline {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  .stat-inline {
+    flex: 1;
+    min-width: 70px;
+    justify-content: center;
+    padding: 0.2rem 0.3rem;
+  }
+  
+  .stat-label-inline {
+    font-size: 0.55rem;
+  }
+  
+  .stat-value-inline {
+    font-size: 0.7rem;
+  }
+  
+  /* Статус */
+  .status-row {
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+  
+  .status-indicator {
+    padding: 0.2rem 0.8rem;
+  }
+  
+  .status-label {
+    font-size: 0.65rem;
+  }
+  
+  .status-value {
+    font-size: 0.75rem;
+  }
+  
+  /* Массив (столбцы) */
+  .array-container {
+    height: 250px;
+    gap: 2px;
+  }
+  
+  .bar-value {
+    font-size: 8px;
+    margin-bottom: 2px;
+  }
+  
+  .bar-index {
+    font-size: 8px;
+    bottom: -18px;
+  }
+  
+  /* Описание шага */
+  .step-description {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+  }
+  
+  /* Отладчик кода */
+  .code-debugger {
+    font-size: 12px;
+  }
+  
+  .code-header {
+    padding: 10px 12px;
+  }
+  
+  .code-header h3 {
+    font-size: 14px;
+  }
+  
+  .code-line {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+  
+  .line-number {
+    min-width: 35px;
+    font-size: 10px;
+  }
+  
+  .debugger-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .code-container {
+    max-height: 300px;
+  }
+  
+  /* Переменные */
+  .variables-grid {
+    grid-template-columns: 1fr;
+    max-height: 150px;
+  }
+  
+  .variable-item {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .variable-name {
+    font-size: 10px;
+  }
+  
+  .variable-value {
+    font-size: 9px;
+  }
+  
+  /* Теория */
+  .theory-panel {
+    margin-top: 1rem;
+  }
+  
+  .theory-header {
+    padding: 12px 16px;
+  }
+  
+  .theory-header h3 {
+    font-size: 14px;
+  }
+  
+  .section-title {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .section-content {
+    padding: 0 12px 12px 35px;
+    font-size: 12px;
+  }
+  
+  .pros-cons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .example-code {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+  
+  /* Меню алгоритмов */
+  .menu-dropdown {
+    position: fixed;
+    top: auto;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin-top: 5px;
+  }
+  
+  .category-title {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .category-items span {
+    padding: 5px 12px 5px 25px;
+    font-size: 11px;
+  }
+}
+
+/* Очень маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .menu-trigger {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .login-button {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+  }
+  
+  .stat-inline {
+    min-width: 60px;
+  }
+  
+  .stat-label-inline {
+    font-size: 0.5rem;
+  }
+  
+  .stat-value-inline {
+    font-size: 0.65rem;
+  }
+  
+  .array-container {
+    height: 200px;
+  }
+  
+  .bar-value {
+    font-size: 7px;
+  }
+  
+  .code-line {
+    font-size: 9px;
+  }
+  
+  .line-number {
+    min-width: 28px;
+    font-size: 8px;
+  }
+  
+  .debugger-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .theory-header h3 {
+    font-size: 12px;
+  }
+}
+
+/* Горизонтальная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .visualization-layout {
+    flex-direction: row;
+  }
+  
+  .array-container {
+    height: 180px;
+  }
+  
+  .code-container {
+    max-height: 250px;
+  }
+  
+  .variables-grid {
+    max-height: 100px;
+  }
+}
+
+/* Очень маленькие телефоны (до 480px) */
+@media (max-width: 480px) {
+  .app-header {
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .menu-trigger {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .login-button {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+  }
+  
+  .stat-inline {
+    min-width: 60px;
+  }
+  
+  .stat-label-inline {
+    font-size: 0.5rem;
+  }
+  
+  .stat-value-inline {
+    font-size: 0.65rem;
+  }
+  
+  /* Массив - без скролла, просто уменьшенные столбцы */
+  .array-container {
+    height: 200px;
+    gap: 2px;
+    justify-content: center;
+  }
+  
+  .array-bar {
+    min-width: 18px !important;
+    width: auto !important;
+    flex: 1 1 auto !important;
+  }
+  
+  .bar-value {
+    font-size: 10px !important;
+    margin-bottom: 1px;
+  }
+  
+  .bar-index {
+    font-size: 10px !important;
+    bottom: -14px;
+  }
+  
+  .code-line {
+    font-size: 9px;
+  }
+  
+  .line-number {
+    min-width: 28px;
+    font-size: 8px;
+  }
+  
+  .debugger-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .theory-header h3 {
+    font-size: 12px;
+  }
+}
+
+/* Для экранов 400px и меньше */
+@media (max-width: 400px) {
+  .array-bar {
+    min-width: 15px !important;
+  }
+  
+  .bar-value {
+    font-size: 9px !important;
+  }
+  
+  .bar-index {
+    font-size: 9px !important;
+    bottom: -12px;
+  }
+}
+
+/* Для экранов 360px и меньше */
+@media (max-width: 360px) {
+  .array-bar {
+    min-width: 13px !important;
+  }
+  
+  .bar-value {
+    font-size: 8px !important;
+  }
+}

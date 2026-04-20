@@ -5,32 +5,33 @@
 .user-menu-button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   background: none;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  padding: 6px 12px;
+  border: 1px solid #4ec9b0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: white;
+  background-color: #2a2a2a;
 }
 
 .user-menu-button:hover {
-  background-color: #f5f5f5;
-  border-color: #ccc;
+  background-color: #3a3a3a;
+  transform: scale(1.1);
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  background-color: #4CAF50;
-  color: white;
+  width: 36px;
+  height: 36px;
+  background-color: #4ec9b0;
+  color: #1a1a1a;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .user-name {
@@ -153,7 +154,7 @@
 .progress-title {
   font-size: 12px;
   font-weight: bold;
-  color: #e0e0e0;
+  color: #1f6837;
   margin-bottom: 12px;
 }
 
@@ -168,7 +169,7 @@
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: #b0b0b0;
+  color: #155829;
 }
 
 .progress-item span:first-child {

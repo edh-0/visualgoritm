@@ -25,7 +25,7 @@ export function bubbleSortSteps(initialArray) {
   const arr = [...initialArray];
   const n = arr.length;
 
-  // Начальное состояние (строка 1-2)
+  // Начальное состояние
   steps.push({
     array: [...arr],
     comparing: [],
@@ -37,7 +37,7 @@ export function bubbleSortSteps(initialArray) {
 
   // Основной алгоритм пузырьковой сортировки
   for (let i = 0; i < n - 1; i++) {
-    // Отмечаем начало внешнего цикла (строка 3)
+    // Отмечаем начало внешнего цикла 
     steps.push({
       array: [...arr],
       comparing: [],

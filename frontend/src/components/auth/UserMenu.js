@@ -20,28 +20,30 @@ const UserMenu = () => {
   if (!user) return null;
 
   const displayName = user.username || user.email.split('@')[0];
-  
+  const firstLetter = displayName.charAt(0).toUpperCase();
+
   // Подсчитываем количество изученных алгоритмов
   const viewedAlgorithms = progress?.filter(p => p.viewed).length || 0;
-  const totalAlgorithms = 8; // bubble, selection, insertion, quick, binarySearch, linearSearch, bfs, dfs
-  
+  const totalAlgorithms = 9; // bubble, selection, insertion, quick, binarySearch, linearSearch, bfs, dfs, dijkstra
+
   // Форматируем дату последней активности
-  const lastActive = stats?.last_active_at 
+  const lastActive = stats?.last_active_at
     ? new Date(stats.last_active_at).toLocaleDateString('ru-RU')
-    : '—';
+    : '---';
 
+  const favoriteAlgorithm = stats?.favorite_algorithm || '---';
 
-    const favoriteAlgorithm = stats?.favorite_algorithm || '—';
-    const algorithmNames = {
-      bubble: 'Пузырьковая',
-      selection: 'Выбором',
-      insertion: 'Вставками',
-      quick: 'Быстрая',
-      binarySearch: 'Бинарный поиск',
-      linearSearch: 'Линейный поиск',
-      bfs: 'BFS',
-      dfs: 'DFS'
-    };
+  const algorithmNames = {
+    bubble: 'Пузырьковая',
+    selection: 'Выбором',
+    insertion: 'Вставками',
+    quick: 'Быстрая',
+    binarySearch: 'Бинарный поиск',
+    linearSearch: 'Линейный поиск',
+    bfs: 'BFS',
+    dfs: 'DFS',
+    dijkstra: 'Дейкстра'
+  };
 
   return (
     <div className="user-menu" ref={menuRef}>
@@ -50,10 +52,9 @@ const UserMenu = () => {
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="user-avatar">
-          {displayName.charAt(0).toUpperCase()}
+          {firstLetter}
         </span>
-        <span className="user-name">{displayName}</span>
-        <span className="dropdown-arrow">▼</span>
+        {/* Имя убрали - только иконка */}
       </button>
 
       {isOpen && (
@@ -110,113 +111,74 @@ const UserMenu = () => {
           <div className="dropdown-progress">
             <div className="progress-title">📚 Прогресс изучения</div>
             <div className="progress-bars">
-              {/* сортировки */}
               <div className="progress-item">
                 <span>Пузырьковая</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'bubble')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'bubble')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'bubble')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'bubble')?.viewed ? '✅' : '⭕'}</span>
               </div>
               <div className="progress-item">
                 <span>Выбором</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'selection')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'selection')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'selection')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'selection')?.viewed ? '✅' : '⭕'}</span>
               </div>
               <div className="progress-item">
                 <span>Вставками</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'insertion')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'insertion')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'insertion')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'insertion')?.viewed ? '✅' : '⭕'}</span>
               </div>
               <div className="progress-item">
                 <span>Быстрая</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'quick')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'quick')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'quick')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'quick')?.viewed ? '✅' : '⭕'}</span>
               </div>
-              {/* поиск */}
               <div className="progress-item">
                 <span>Бинарный поиск</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'binarySearch')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'binarySearch')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'binarySearch')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'binarySearch')?.viewed ? '✅' : '⭕'}</span>
               </div>
               <div className="progress-item">
                 <span>Линейный поиск</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'linearSearch')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'linearSearch')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'linearSearch')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'linearSearch')?.viewed ? '✅' : '⭕'}</span>
               </div>
-              {/* графы */}
               <div className="progress-item">
                 <span>BFS</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'bfs')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'bfs')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'bfs')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'bfs')?.viewed ? '✅' : '⭕'}</span>
               </div>
               <div className="progress-item">
                 <span>DFS</span>
                 <div className="progress-bar-bg">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: progress?.find(p => p.algorithm_id === 'dfs')?.viewed ? '100%' : '0%' }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'dfs')?.viewed ? '100%' : '0%' }} />
                 </div>
-                <span className="progress-status">
-                  {progress?.find(p => p.algorithm_id === 'dfs')?.viewed ? '✅' : '⭕'}
-                </span>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'dfs')?.viewed ? '✅' : '⭕'}</span>
+              </div>
+              <div className="progress-item">
+                <span>Дейкстра</span>
+                <div className="progress-bar-bg">
+                  <div className="progress-bar-fill" style={{ width: progress?.find(p => p.algorithm_id === 'dijkstra')?.viewed ? '100%' : '0%' }} />
+                </div>
+                <span className="progress-status">{progress?.find(p => p.algorithm_id === 'dijkstra')?.viewed ? '✅' : '⭕'}</span>
               </div>
             </div>
           </div>
 
           <div className="dropdown-divider"></div>
-          <button
-            className="dropdown-item logout-button"
-            onClick={logout}
-          >
+          <button className="dropdown-item logout-button" onClick={logout}>
             Выйти
           </button>
         </div>

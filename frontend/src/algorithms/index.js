@@ -34,7 +34,7 @@ export const algorithms = {
   // Сортировки
   bubble: {
     type: 'sorting',
-    name: "Пузырьковая",
+    name: "Пузырьковая сортировка",
     function: bubbleSortSteps,
     info: bubbleSortInfo,
     code: bubbleSortCode,
@@ -42,7 +42,7 @@ export const algorithms = {
   },
   selection: {
     type: 'sorting',
-    name: "Выбором",
+    name: "Сортировка выбором",
     function: selectionSortSteps,
     info: selectionSortInfo,
     code: selectionSortCode,
@@ -50,7 +50,7 @@ export const algorithms = {
   },
   insertion: {
     type: 'sorting',
-    name: "Вставками",
+    name: "Сортировка вставками",
     function: insertionSortSteps,
     info: insertionSortInfo,
     code: insertionSortCode,
@@ -58,7 +58,7 @@ export const algorithms = {
   },
   quick: {
     type: 'sorting',
-    name: "Быстрая",
+    name: "Быстрая сортировка",
     function: quickSortSteps,
     info: quickSortInfo,
     code: quickSortCode,
